@@ -11,6 +11,37 @@
     console.log('%c[Parental Guide] Script started', 'color: purple; font-weight: bold');
     console.log('%c[Parental Guide] Config - Retry Interval: ' + CONFIG.RETRY_INTERVAL + 'ms, Max Duration: ' + CONFIG.MAX_RETRY_DURATION + 'ms, Success Wait: ' + CONFIG.SUCCESS_WAIT_TIME + 'ms', 'color: purple');
     
+    // let lastDetailId = null;
+    
+    // function pageMonitor() {
+    //     const currentHash = window.location.hash;
+    //     console.log('%c[Parental Guide] Page monitor - Current hash: ' + currentHash, 'color: cyan');
+        
+    //     // Check if this is a detail page
+    //     const isDetailPage = currentHash.includes('details?id=');
+        
+    //     if (isDetailPage) {
+    //         // Extract the ID from the hash
+    //         const idMatch = currentHash.match(/details\?id=([a-f0-9]+)/);
+    //         if (idMatch) {
+    //             const currentDetailId = idMatch[1];
+    //             console.log('%c[Parental Guide] Page monitor - Current detail ID: ' + currentDetailId, 'color: cyan');
+                
+    //             // Check if this is a new detail page (different ID from last time)
+    //             if (currentDetailId !== lastDetailId) {
+    //                 console.log('%c[Parental Guide] Page monitor - Detail ID changed from ' + (lastDetailId || 'none') + ' to ' + currentDetailId + ', running script...', 'color: green');
+    //                 lastDetailId = currentDetailId;
+    //                 initializeScript();
+    //             } else {
+    //                 console.log('%c[Parental Guide] Page monitor - Same detail ID, skipping script run', 'color: gray');
+    //             }
+    //         }
+    //     } else {
+    //         console.log('%c[Parental Guide] Page monitor - Not a detail page', 'color: gray');
+    //         lastDetailId = null;
+    //     }
+    // }
+    
     function initializeScript() {
         // Check if this is a detail page by looking at the URL hash
         const isDetailPage = window.location.hash.includes('details?id=');
@@ -310,10 +341,8 @@
             const modalHeader = document.createElement('div');
             modalHeader.style.display = 'flex';
             modalHeader.style.justifyContent = 'space-between';
-            modalHeader.style.alignItems = 'center';
+            modalHeader.style.alignItems = 'flex-start';
             modalHeader.style.marginBottom = '20px';
-            modalHeader.style.borderBottom = '2px solid #fff';
-            modalHeader.style.paddingBottom = '15px';
             
             const headerLeft = document.createElement('div');
             headerLeft.style.display = 'flex';
@@ -340,18 +369,7 @@
             headerRight.style.alignItems = 'center';
             headerRight.style.gap = '10px';
             
-            // Expand all button
-            const expandAllButton = document.createElement('button');
-            expandAllButton.className = 'emby-button paper-icon-button-light';
-            expandAllButton.style.padding = '0';
-            expandAllButton.style.cursor = 'pointer';
-            expandAllButton.style.backgroundColor = 'transparent';
-            expandAllButton.style.border = 'none';
-            expandAllButton.style.color = '#fff';
-            expandAllButton.innerHTML = '⊞'; // Box expand symbol
-            expandAllButton.title = 'Expand all';
-            
-            // Collapse all button
+            // Collapse all button (LEFT)
             const collapseAllButton = document.createElement('button');
             collapseAllButton.className = 'emby-button paper-icon-button-light';
             collapseAllButton.style.padding = '0';
@@ -362,8 +380,19 @@
             collapseAllButton.innerHTML = '⊟'; // Box collapse symbol
             collapseAllButton.title = 'Collapse all';
             
-            headerRight.appendChild(expandAllButton);
+            // Expand all button (RIGHT)
+            const expandAllButton = document.createElement('button');
+            expandAllButton.className = 'emby-button paper-icon-button-light';
+            expandAllButton.style.padding = '0';
+            expandAllButton.style.cursor = 'pointer';
+            expandAllButton.style.backgroundColor = 'transparent';
+            expandAllButton.style.border = 'none';
+            expandAllButton.style.color = '#fff';
+            expandAllButton.innerHTML = '⊞'; // Box expand symbol
+            expandAllButton.title = 'Expand all';
+            
             headerRight.appendChild(collapseAllButton);
+            headerRight.appendChild(expandAllButton);
             
             // IMDb Parental Guide link (only if we have IMDb ID)
             if (imdbId) {
@@ -418,8 +447,23 @@
             modalHeader.appendChild(headerRight);
             console.log('%c[Parental Guide] ✓ Modal header created', 'color: green');
             
+            // Spoiler notice - after header section before divider
+            const spoilerNotice = document.createElement('div');
+            spoilerNotice.style.padding = '10px 0px 15px 0px';
+            spoilerNotice.style.color = '#aaa';
+            spoilerNotice.style.fontSize = '13px';
+            spoilerNotice.innerHTML = '⚠️ Some items may be hidden because they contain spoilers. '
+                + (imdbId
+                    ? `<a href="https://www.imdb.com/title/${imdbId}/parentalguide/" target="_blank" style="color:#ffd700;text-decoration:none;">View full guide on IMDb</a> for the complete list.`
+                    : 'Check the IMDb parental guide page for the complete list.');
+            
+            // Divider line
+            const divider = document.createElement('div');
+            divider.style.borderBottom = '2px solid #fff';
+            divider.style.marginBottom = '20px';
+            
             const modalBody = document.createElement('div');
-            modalBody.style.marginTop = '20px';
+            modalBody.style.marginTop = '0px';
             
             const categorySections = [];
             
@@ -560,7 +604,7 @@
             });
             console.log('%c[Parental Guide] ✓ Created ' + categoriesCreated + ' category sections in modal', 'color: green');
             
-            // Expand all functionality
+            // Expand all functionality (RIGHT button)
             expandAllButton.addEventListener('click', () => {
                 let expandedCount = 0;
                 categorySections.forEach(section => {
@@ -572,7 +616,7 @@
                 console.log('%c[Parental Guide] Expanded ' + expandedCount + ' sections', 'color: blue');
             });
             
-            // Collapse all functionality
+            // Collapse all functionality (LEFT button)
             collapseAllButton.addEventListener('click', () => {
                 let collapsedCount = 0;
                 categorySections.forEach(section => {
@@ -584,23 +628,10 @@
                 console.log('%c[Parental Guide] Collapsed ' + collapsedCount + ' sections', 'color: blue');
             });
             
-            // Spoiler notice footer
-            const spoilerNotice = document.createElement('div');
-            spoilerNotice.style.marginTop = '20px';
-            spoilerNotice.style.padding = '10px 14px';
-            spoilerNotice.style.backgroundColor = '#2a2a2a';
-            spoilerNotice.style.borderRadius = '4px';
-            spoilerNotice.style.borderLeft = '3px solid #ffd700';
-            spoilerNotice.style.color = '#aaa';
-            spoilerNotice.style.fontSize = '13px';
-            spoilerNotice.innerHTML = '⚠️ Some items may be hidden because they contain spoilers. '
-                + (imdbId
-                    ? `<a href="https://www.imdb.com/title/${imdbId}/parentalguide/" target="_blank" style="color:#ffd700;text-decoration:none;">View full guide on IMDb</a> for the complete list.`
-                    : 'Check the IMDb parental guide page for the complete list.');
-
             modalContent.appendChild(modalHeader);
-            modalContent.appendChild(modalBody);
             modalContent.appendChild(spoilerNotice);
+            modalContent.appendChild(divider);
+            modalContent.appendChild(modalBody);
             modal.appendChild(modalContent);
             document.body.appendChild(modal);
             console.log('%c[Parental Guide] ✓ Modal created and appended to document', 'color: green');
@@ -719,6 +750,11 @@
             }
         }, CONFIG.RETRY_INTERVAL);
     }
+    
+    // // Page monitor - runs on a loop to detect page changes
+    // setInterval(() => {
+    //     pageMonitor();
+    // }, 500);
     
     // Initial run
     console.log('%c[Parental Guide] Running initial check...', 'color: purple');
