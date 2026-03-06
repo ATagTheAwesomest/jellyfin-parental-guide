@@ -40,7 +40,7 @@ The parental guide JSON is embedded inside the `<studio>` tag — a writable fre
 
 ### 2. `script.js` — Jellyfin userscript
 
-A browser userscript (e.g. via [Tampermonkey](https://www.tampermonkey.net/)) that runs on the Jellyfin web UI detail page.
+A script injected via the [Jellyfin JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector) plugin, which runs on the Jellyfin web UI detail page.
 
 It:
 1. Reads the JSON embedded in the `<studio>` field of the title's metadata
@@ -56,7 +56,14 @@ Severity colours: `None` = green · `Mild` = light green · `Moderate` = amber �
 - Python 3.11+
 - [`cinemagoerng`](https://pypi.org/project/cinemagoerng/) (`pip install cinemagoerng`)
 - Jellyfin server with a library that uses `.nfo` metadata
-- Tampermonkey (or equivalent) in your browser for the userscript
+- [Jellyfin JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector) plugin installed on your Jellyfin server
+
+### Installing `script.js`
+
+1. Install the [Jellyfin JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector) plugin on your Jellyfin server
+2. In Jellyfin, go to **Dashboard → JavaScript Injector**
+3. Add a new script entry and paste the contents of `script.js`
+4. Save — the script will be active on all detail pages immediately
 
 ---
 
