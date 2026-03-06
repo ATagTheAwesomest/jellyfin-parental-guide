@@ -11,52 +11,6 @@
     console.log('%c[Parental Guide] Script started', 'color: purple; font-weight: bold');
     console.log('%c[Parental Guide] Config - Retry Interval: ' + CONFIG.RETRY_INTERVAL + 'ms, Max Duration: ' + CONFIG.MAX_RETRY_DURATION + 'ms, Success Wait: ' + CONFIG.SUCCESS_WAIT_TIME + 'ms', 'color: purple');
     
-    let lastHash = '';
-    let scriptRunning = false;
-    let currentInterval = null;
-    let mutationDebounceTimer = null;
-    
-    function cleanupOldScript() {
-        console.log('%c[Parental Guide] Cleaning up old script instance...', 'color: orange');
-        
-        // Clear any running intervals
-        if (currentInterval) {
-            clearInterval(currentInterval);
-            currentInterval = null;
-            console.log('%c[Parental Guide] Cleared interval', 'color: orange');
-        }
-        
-        // Clear any debounce timers
-        if (mutationDebounceTimer) {
-            clearTimeout(mutationDebounceTimer);
-            mutationDebounceTimer = null;
-        }
-        
-        // Remove old modal if it exists
-        const oldModal = document.querySelector('.parentalGuideModal');
-        if (oldModal) {
-            oldModal.remove();
-            console.log('%c[Parental Guide] Removed old modal', 'color: orange');
-        }
-        
-        // Remove old rating groups if they exist
-        const oldRatingGroup = document.querySelector('.detailsGroupItem.ratingGroup');
-        if (oldRatingGroup) {
-            oldRatingGroup.remove();
-            console.log('%c[Parental Guide] Removed old rating group', 'color: orange');
-        }
-        
-        // Remove old content warnings if they exist
-        const oldContentWarnings = document.querySelector('.detailsGroupItem.contentWarningsGroup');
-        if (oldContentWarnings) {
-            oldContentWarnings.remove();
-            console.log('%c[Parental Guide] Removed old content warnings group', 'color: orange');
-        }
-        
-        scriptRunning = false;
-        console.log('%c[Parental Guide] Cleanup complete', 'color: orange');
-    }
-    
     function initializeScript() {
         // Check if this is a detail page by looking at the URL hash
         const isDetailPage = window.location.hash.includes('details?id=');
@@ -65,15 +19,10 @@
         
         if (!isDetailPage) {
             console.log('%c[Parental Guide] Not a detail page, skipping initialization', 'color: orange');
-            scriptRunning = false;
             return;
         }
         
-        // Clean up any old instances
-        cleanupOldScript();
-        
         console.log('%c[Parental Guide] Detail page detected, initializing...', 'color: green');
-        scriptRunning = true;
         
         // Color mapping for severity levels
         const colorMap = {
@@ -731,7 +680,7 @@
         let mediaRatingFound = false;
         let startTime = Date.now();
         
-        currentInterval = setInterval(() => {
+        const interval = setInterval(() => {
             attemptCount++;
             const elapsedTime = Date.now() - startTime;
             
@@ -755,7 +704,7 @@
             if (guideFound && mediaRatingFound) {
                 console.log('%c[Parental Guide] ✓ Both components found! Waiting ' + CONFIG.SUCCESS_WAIT_TIME + 'ms before stopping retries...', 'color: green; font-weight: bold');
                 setTimeout(() => {
-                    clearInterval(currentInterval);
+                    clearInterval(interval);
                     const finalTime = Date.now() - startTime;
                     console.log('%c[Parental Guide] ✓✓✓ COMPLETE! Successfully loaded and initialized after ' + attemptCount + ' attempts in ' + finalTime + 'ms', 'color: green; font-weight: bold; font-size: 14px');
                 }, CONFIG.SUCCESS_WAIT_TIME);
@@ -764,53 +713,14 @@
             
             // If exceeded max retry duration, stop
             if (elapsedTime >= CONFIG.MAX_RETRY_DURATION) {
-                clearInterval(currentInterval);
+                clearInterval(interval);
                 console.log(`%c[Parental Guide] ⚠ Stopping retries: Exceeded max duration of ${CONFIG.MAX_RETRY_DURATION}ms after ${attemptCount} attempts`, 'color: red; font-weight: bold');
                 console.log(`%c[Parental Guide] Status: Guide found: ${guideFound}, Media rating found: ${mediaRatingFound}`, 'color: orange');
             }
         }, CONFIG.RETRY_INTERVAL);
     }
     
-    // Listen for hash changes
-    window.addEventListener('hashchange', () => {
-        const currentHash = window.location.hash;
-        console.log('%c[Parental Guide] Hashchange detected to: ' + currentHash, 'color: blue');
-        
-        if (currentHash !== lastHash) {
-            lastHash = currentHash;
-            console.log('%c[Parental Guide] Hash is different from last, reinitializing...', 'color: orange');
-            initializeScript();
-        }
-    });
-    
-    // Also use MutationObserver to detect DOM changes (for pages that don't trigger hashchange)
-    const observer = new MutationObserver((mutations) => {
-        const currentHash = window.location.hash;
-        
-        // Debounce mutation checks to avoid excessive reinitializations
-        clearTimeout(mutationDebounceTimer);
-        mutationDebounceTimer = setTimeout(() => {
-            // Only reinitialize if hash has changed
-            if (currentHash !== lastHash) {
-                console.log('%c[Parental Guide] DOM mutation detected with new hash: ' + currentHash, 'color: cyan');
-                lastHash = currentHash;
-                console.log('%c[Parental Guide] Reinitializing due to hash change...', 'color: orange');
-                initializeScript();
-            }
-        }, 500); // Wait 500ms to debounce rapid mutations
-    });
-    
-    // Start observing the main content area for changes
-    const contentArea = document.querySelector('div[role="main"]') || document.body;
-    observer.observe(contentArea, {
-        childList: true,
-        subtree: true,
-        attributes: false
-    });
-    console.log('%c[Parental Guide] MutationObserver started on content area', 'color: cyan');
-    
     // Initial run
     console.log('%c[Parental Guide] Running initial check...', 'color: purple');
-    lastHash = window.location.hash;
     initializeScript();
 })();
