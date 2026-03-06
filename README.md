@@ -83,6 +83,12 @@ The script will:
 
 ---
 
+## Limitations
+
+- **Spoilers are excluded from the `.nfo` file.** The IMDb parental guide includes items flagged as spoilers. These are intentionally stripped during export to avoid accidental reveals. The Jellyfin UI modal displays a notice directing users to the full IMDb parental guide page for the complete list.
+
+---
+
 ## Roadmap
 
 - [x] Accept IMDb ID as a CLI argument

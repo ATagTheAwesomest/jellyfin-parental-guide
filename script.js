@@ -635,8 +635,23 @@
                 console.log('%c[Parental Guide] Collapsed ' + collapsedCount + ' sections', 'color: blue');
             });
             
+            // Spoiler notice footer
+            const spoilerNotice = document.createElement('div');
+            spoilerNotice.style.marginTop = '20px';
+            spoilerNotice.style.padding = '10px 14px';
+            spoilerNotice.style.backgroundColor = '#2a2a2a';
+            spoilerNotice.style.borderRadius = '4px';
+            spoilerNotice.style.borderLeft = '3px solid #ffd700';
+            spoilerNotice.style.color = '#aaa';
+            spoilerNotice.style.fontSize = '13px';
+            spoilerNotice.innerHTML = '⚠️ Some items may be hidden because they contain spoilers. '
+                + (imdbId
+                    ? `<a href="https://www.imdb.com/title/${imdbId}/parentalguide/" target="_blank" style="color:#ffd700;text-decoration:none;">View full guide on IMDb</a> for the complete list.`
+                    : 'Check the IMDb parental guide page for the complete list.');
+
             modalContent.appendChild(modalHeader);
             modalContent.appendChild(modalBody);
+            modalContent.appendChild(spoilerNotice);
             modal.appendChild(modalContent);
             document.body.appendChild(modal);
             console.log('%c[Parental Guide] ✓ Modal created and appended to document', 'color: green');

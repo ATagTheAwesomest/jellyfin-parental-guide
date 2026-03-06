@@ -30,7 +30,7 @@ ADVISORY_MAP = [
 
 def advisory_to_dict(section):
     votes = vars(section.votes).copy() if section.votes else {}
-    items = [d.text for d in section.details] if section.details else []
+    items = [d.text for d in section.details if not d.is_spoiler] if section.details else []
     return {"status": section.status, "votes": votes, "items": items}
 
 cert = title.certification
