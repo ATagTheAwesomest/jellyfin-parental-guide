@@ -6,7 +6,7 @@ Pulls IMDb parental guide data and embeds it into Jellyfin-compatible `.nfo` fil
 
 ## How it works
 
-### 1. `matrix_parental.py` — NFO generator (example)
+### 1. `matrix_parental.py` — NFO generator
 
 Fetches a title's full parental guide from IMDb using the [`cinemagoerng`](https://github.com/cinemagoerng/cinemagoerng) library and writes it as a Jellyfin-compatible XML `.nfo` file.
 
@@ -33,8 +33,6 @@ The parental guide JSON is embedded inside the `<studio>` tag — a writable fre
 }</studio>
 </movie>
 ```
-
-**Planned:** accept any IMDb ID as input argument so it can be run on any title.
 
 ---
 
@@ -70,21 +68,25 @@ Severity colours: `None` = green · `Mild` = light green · `Moderate` = amber �
 ## Usage
 
 ```powershell
-# Run the example (The Matrix)
-python matrix_parental.py
+# Auto-named output → "The Matrix (1999).nfo"
+python matrix_parental.py tt0133093
+
+# Custom output filename → "my_movie.nfo"
+python matrix_parental.py tt0133093 --name "my_movie"
 ```
 
-Pipe stdout into an `.nfo` file next to your video:
-
-```powershell
-python matrix_parental.py > "The Matrix (1999).nfo"
-```
+The script will:
+- Fetch the title metadata and full parental guide from IMDb
+- Auto-name the file `{Title} ({Year}).nfo` if `--name` is not provided
+- Strip any characters illegal in filenames from the title
+- Write the `.nfo` to the current directory
 
 ---
 
 ## Roadmap
 
-- [ ] Accept IMDb ID as a CLI argument (`python nfo_gen.py tt0133093`)
+- [x] Accept IMDb ID as a CLI argument
+- [x] Auto-name output file as `{Title} ({Year}).nfo`
 - [ ] Batch processing for an entire library folder
 - [ ] Auto-match existing video files to IMDb IDs via filename
 - [ ] Jellyfin plugin to run fetching server-side
