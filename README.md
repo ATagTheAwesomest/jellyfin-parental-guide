@@ -49,7 +49,7 @@ Three files work together to render parental guide data inside the Jellyfin web 
 **What it does:**
 1. Reads the JSON embedded in the `<studio>` field of the title's metadata
 2. Injects an **MPA rating row** and **colour-coded content warning badges** directly into the detail page (Sex & Nudity, Violence, Language, Drugs, Intense Scenes)
-3. Opens a **full parental guide modal** on click, showing all detail items per category with vote breakdowns, a link to the IMDb parental guide page, and expand/collapse controls
+3. Opens a **full parental guide modal** on click, showing all detail items per category, a link to the IMDb parental guide page, and expand/collapse controls
 
 Severity colours: `None` = green · `Mild` = light green · `Moderate` = amber · `Severe` = red
 
