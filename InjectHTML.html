@@ -1,0 +1,38 @@
+<!-- Parental Guide Modal — hidden by default, shown by InjectJS.js -->
+<div class="parentalGuideModal" id="parentalGuideModal">
+    <div class="pg-modal-content">
+
+        <!-- ── Header ── -->
+        <div class="pg-modal-header">
+            <div class="pg-header-left">
+                <h2 class="pg-modal-title">IMDb Parental Guide</h2>
+                <div class="pg-mpa-display">
+                    <!-- JS populates: "<strong>PG-13</strong> – reason…" or left empty -->
+                </div>
+            </div>
+            <div class="pg-header-right">
+                <button class="emby-button paper-icon-button-light pg-icon-btn pg-collapse-all"
+                        title="Collapse all">&#8863;</button>
+                <button class="emby-button paper-icon-button-light pg-icon-btn pg-expand-all"
+                        title="Expand all">&#8862;</button>
+                <a class="pg-imdb-link pg-header-imdb-link" style="display:none"
+                   target="_blank" rel="noopener noreferrer">View on IMDb</a>
+                <button class="pg-close-btn">&times;</button>
+            </div>
+        </div>
+
+        <!-- ── Spoiler Notice ── -->
+        <div class="pg-spoiler-notice">
+            &#9888;&#65039; Some items may be hidden because they contain spoilers.
+            <a class="pg-spoiler-imdb-link" style="display:none"
+               target="_blank" rel="noopener noreferrer">View full guide on IMDb</a>
+            <span class="pg-spoiler-fallback">Check the IMDb parental guide page for the complete list.</span>
+        </div>
+
+        <!-- ── Divider ── -->
+        <div class="pg-divider"></div>
+
+        <!-- ── Category Sections (populated by JS) ── -->
+        <div class="pg-modal-body"></div>
+    </div>
+</div>

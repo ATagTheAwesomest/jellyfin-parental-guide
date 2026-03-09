@@ -1,6 +1,6 @@
 # jellyfin-parental-guide
 
-Pulls IMDb parental guide data and embeds it into Jellyfin-compatible `.nfo` files, then surfaces it inside the Jellyfin web UI via a userscript.
+Pulls IMDb parental guide data and embeds it into Jellyfin-compatible `.nfo` files, then surfaces it inside the Jellyfin web UI via injected CSS, HTML, and JavaScript.
 
 ---
 
@@ -36,11 +36,17 @@ The parental guide JSON is embedded inside the `<studio>` tag — a writable fre
 
 ---
 
-### 2. `script.js` — Jellyfin userscript
+### 2. Web UI injection (CSS + HTML + JS)
 
-A script injected via the [Jellyfin JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector) plugin, which runs on the Jellyfin web UI detail page.
+Three files work together to render parental guide data inside the Jellyfin web interface:
 
-It:
+| File | Purpose | Injection method |
+|---|---|---|
+| `InjectCSS.css` | All styling — modal, badges, category sections, hover states | Jellyfin **Dashboard → Branding → Custom CSS** |
+| `InjectHTML.html` | Static modal markup (hidden by default) | [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) plugin (HTML injection) |
+| `InjectJS.js` | Logic — parses guide JSON, populates the modal, builds rating row & badges, wires events | [Jellyfin JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector) plugin |
+
+**What it does:**
 1. Reads the JSON embedded in the `<studio>` field of the title's metadata
 2. Injects an **MPA rating row** and **colour-coded content warning badges** directly into the detail page (Sex & Nudity, Violence, Language, Drugs, Intense Scenes)
 3. Opens a **full parental guide modal** on click, showing all detail items per category with vote breakdowns, a link to the IMDb parental guide page, and expand/collapse controls
@@ -54,14 +60,31 @@ Severity colours: `None` = green · `Mild` = light green · `Moderate` = amber �
 - Python 3.11+
 - [`cinemagoerng`](https://pypi.org/project/cinemagoerng/) (`pip install cinemagoerng`)
 - Jellyfin server with a library that uses `.nfo` metadata
-- [Jellyfin JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector) plugin installed on your Jellyfin server
+- [File Transformation](https://github.com/oddstr13/jellyfin-plugin-file-transformation) plugin (for HTML injection)
+- [Jellyfin JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector) plugin (for JS injection)
 
-### Installing `script.js`
+### Installing the web UI components
+
+#### CSS (via Jellyfin Branding)
+
+1. In Jellyfin, go to **Dashboard → General → Branding**
+2. Paste the contents of `InjectCSS.css` into the **Custom CSS** field
+3. Save
+
+#### HTML (via File Transformation plugin)
+
+1. Install the [File Transformation](https://github.com/oddstr13/jellyfin-plugin-file-transformation) plugin on your Jellyfin server
+2. Configure it to inject the contents of `InjectHTML.html` into pages served by the web UI
+3. The modal markup will be present in the DOM but hidden (`display: none`) until the JS activates it
+
+#### JS (via JavaScript Injector plugin)
 
 1. Install the [Jellyfin JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector) plugin on your Jellyfin server
 2. In Jellyfin, go to **Dashboard → JavaScript Injector**
-3. Add a new script entry and paste the contents of `script.js`
+3. Add a new script entry and paste the contents of `InjectJS.js`
 4. Save — the script will be active on all detail pages immediately
+
+> **Load order:** The CSS and HTML must be present in the page before the JS runs. The JS looks for `#parentalGuideModal` in the DOM on startup.
 
 ---
 
