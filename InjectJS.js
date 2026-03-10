@@ -36,8 +36,8 @@
 
     var modalBody   = modal.querySelector('.pg-modal-body');
     var closeBtn    = modal.querySelector('.pg-close-btn');
-    var expandBtn   = modal.querySelector('.pg-expand-all');
-    var collapseBtn = modal.querySelector('.pg-collapse-all');
+    var toggleAllBtn = modal.querySelector('.pg-toggle-all');
+    var toggleAllArrow = modal.querySelector('.pg-toggle-all-arrow');
     var mpaDisplay  = modal.querySelector('.pg-mpa-display');
     var headerImdb  = modal.querySelector('.pg-header-imdb-link');
     var spoilerImdb = modal.querySelector('.pg-spoiler-imdb-link');
@@ -162,15 +162,32 @@
         console.log('%c[Parental Guide] Modal closed', 'color: blue');
     }
 
+    function isAnyCategoryOpen() {
+        return categorySections.some(function (s) { return s && s.isOpen(); });
+    }
+
+    function updateToggleAllButton() {
+        if (!toggleAllBtn || !toggleAllArrow) return;
+        var anyOpen = isAnyCategoryOpen();
+        toggleAllArrow.textContent = anyOpen ? '\u25B2' : '\u25BC';
+        toggleAllBtn.title = anyOpen ? 'Close all' : 'Open all';
+        toggleAllBtn.setAttribute('aria-label', anyOpen ? 'Close all' : 'Open all');
+    }
+
     closeBtn.addEventListener('click', closeModal);
     modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
 
-    expandBtn.addEventListener('click', function () {
-        categorySections.forEach(function (s) { if (s && !s.isOpen()) s.toggle(); });
+    if (toggleAllBtn) {
+        toggleAllBtn.addEventListener('click', function () {
+            var anyOpen = isAnyCategoryOpen();
+            categorySections.forEach(function (s) {
+                if (!s) return;
+                if (anyOpen && s.isOpen()) s.toggle();
+                if (!anyOpen && !s.isOpen()) s.toggle();
+            });
+            updateToggleAllButton();
     });
-    collapseBtn.addEventListener('click', function () {
-        categorySections.forEach(function (s) { if (s && s.isOpen()) s.toggle(); });
-    });
+    }
 
     // ── Main logic ───────────────────────────────────────────────────────────
 
@@ -315,6 +332,7 @@
                     var open = content.style.display === 'block';
                     content.style.display = open ? 'none' : 'block';
                     arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+                    updateToggleAllButton();
                 };
 
                 header.addEventListener('click', toggle);
@@ -325,6 +343,8 @@
 
                 modalBody.appendChild(section);
             });
+
+            updateToggleAllButton();
 
             console.log('%c[Parental Guide] ✓ PARSING SUCCESSFUL!', 'color: green; font-weight: bold; font-size: 14px');
             return true;
