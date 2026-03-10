@@ -186,10 +186,12 @@
                 if (!anyOpen && !s.isOpen()) s.toggle();
             });
             updateToggleAllButton();
-    });
+        });
     }
 
     // ── Main logic ───────────────────────────────────────────────────────────
+
+    var currentRetryInterval = null;
 
     function initializeScript() {
         var isDetailPage = window.location.hash.includes('details?id=');
@@ -199,6 +201,19 @@
         }
 
         console.log('%c[Parental Guide] Detail page detected, initializing…', 'color: green');
+
+        // ── Clean up old injected elements ────────────────────────────────────
+        var oldRatingGroup = document.querySelector('.ratingGroup.pg-injected');
+        if (oldRatingGroup) oldRatingGroup.remove();
+
+        var oldBadgesGroup = document.querySelector('.contentWarningsGroup.pg-injected');
+        if (oldBadgesGroup) oldBadgesGroup.remove();
+
+        // ── Stop any existing retry interval ─────────────────────────────────
+        if (currentRetryInterval) {
+            clearInterval(currentRetryInterval);
+            currentRetryInterval = null;
+        }
 
         function tryParseParentalGuide() {
             var studiosGroup = document.querySelector('.studiosGroup');
@@ -268,6 +283,7 @@
 
             // ── Rating row (injected into the detail page) ───────────────────
             var ratingGroup = buildRatingGroup(guide.mpaRating);
+            ratingGroup.classList.add('pg-injected');
             var ratingText  = ratingGroup.querySelector('.pg-rating-text');
             var infoButton  = ratingGroup.querySelector('.pg-info-btn');
             itemDetailsGroup.insertBefore(ratingGroup, studiosGroup.nextSibling);
@@ -277,7 +293,7 @@
 
             // ── Content-warning badges (injected into the detail page) ────────
             var badgesGroup = document.createElement('div');
-            badgesGroup.className = 'detailsGroupItem contentWarningsGroup';
+            badgesGroup.className = 'detailsGroupItem contentWarningsGroup pg-injected';
 
             var badgesLabel = document.createElement('div');
             badgesLabel.className = 'contentWarningsLabel label';
@@ -367,7 +383,7 @@
         var mediaRatingFound = false;
         var startTime        = Date.now();
 
-        var interval = setInterval(function () {
+        currentRetryInterval = setInterval(function () {
             attemptCount++;
             var elapsed = Date.now() - startTime;
 
@@ -376,14 +392,16 @@
 
             if (guideFound && mediaRatingFound) {
                 setTimeout(function () {
-                    clearInterval(interval);
+                    clearInterval(currentRetryInterval);
+                    currentRetryInterval = null;
                     console.log('%c[Parental Guide] ✓✓✓ COMPLETE in ' + attemptCount + ' attempts (' + (Date.now() - startTime) + 'ms)', 'color: green; font-weight: bold; font-size: 14px');
                 }, CONFIG.SUCCESS_WAIT_TIME);
                 return;
             }
 
             if (elapsed >= CONFIG.MAX_RETRY_DURATION) {
-                clearInterval(interval);
+                clearInterval(currentRetryInterval);
+                currentRetryInterval = null;
                 console.log('%c[Parental Guide] ⚠ Stopped after ' + attemptCount + ' attempts (' + elapsed + 'ms)', 'color: red; font-weight: bold');
             }
         }, CONFIG.RETRY_INTERVAL);
@@ -391,4 +409,20 @@
 
     console.log('%c[Parental Guide] Running initial check…', 'color: purple');
     initializeScript();
+
+    // ── Listen for hash changes to re-run on detail page navigation ──────────
+    window.addEventListener('hashchange', function () {
+        console.log('%c[Parental Guide] Hash changed, checking new page…', 'color: purple');
+        initializeScript();
+    });
+
+    // ── Fallback: Use polling to detect hash changes if hashchange misses ────
+    var lastHash = window.location.hash;
+    setInterval(function () {
+        if (window.location.hash !== lastHash) {
+            lastHash = window.location.hash;
+            console.log('%c[Parental Guide] Hash changed (via polling), checking new page…', 'color: purple');
+            initializeScript();
+        }
+    }, 500);
 })();
